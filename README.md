@@ -1,23 +1,92 @@
-# Explicatie Mod Functionare Aplicatie Client-Server
+# Aplicație Chat Client-Server folosind TCP și UDP
 
-### 1. TCP (cu conexiune)
-* *Cum se realizeaza conexiunea:* TCP stabileste o conexiune initiala folosind procesul de "3-Way Handshake" inainte de a transmite date[cite: 1]. Serverul asteapta conectarea pe portul definit (ex: 5000), iar clientul o initiaza, stabilind un canal de comunicare stabil[cite: 1].
-* *Cum sunt trimise mesajele:* Mesajele sunt trimise ca un flux continuu, organizate in segmente[cite: 1]. Clientul si serverul isi trimit datele pe rand (ping-pong), folosind acelasi socket pe toata durata conversatiei[cite: 1].
+Acest proiect implementează o aplicație simplă de tip chat client-server folosind socket-uri.  
+Serverul este implementat în **Java**, iar clientul este implementat în **Python**.  
 
-### 2. UDP (fara conexiune)
-* *Cum se realizeaza conexiunea:* UDP nu stabileste o conexiune in prealabil[cite: 1]. Etapa de handshake initial este complet absenta[cite: 1].
-* *Cum sunt trimise mesajele:* Mesajele sunt trimise independent, sub forma de datagrame, direct catre adresa IP si portul destinatarului[cite: 1]. Serverul foloseste functii specifice (ex: recvfrom) pentru a primi datele si pentru a extrage adresa IP si portul expeditorului din primul pachet, astfel incat sa stie unde sa trimita raspunsul inapoi[cite: 1].
-
-### 3. Diferente observate in Wireshark
-* *Handshake Initial:* La TCP este prezent (apar pachetele de tip SYN, SYN-ACK, ACK la inceput), in timp ce la UDP lipseste cu desavarsire[cite: 1].
-* *Confirmarea primirii:* Protocolul TCP confirma primirea datelor prin pachete de tip ACK[cite: 1]. La protocolul UDP, primirea nu se confirma[cite: 1].
-* *Denumire PDU:* In Wireshark se observa ca traficul TCP este format din "Segmente", in timp ce traficul UDP este format din "Datagrame"[cite: 1].
+Scopul aplicației este de a demonstra diferențele dintre protocoalele **TCP (Transmission Control Protocol)** și **UDP (User Datagram Protocol)**, precum și analiza traficului de rețea folosind Wireshark.
 
 ---
 
-### Capturi Wireshark
-1. *Captura TCP:* (Aici vom insera imaginea cu filtrul tcp.port == 5000 care arata handshake-ul)[cite: 1]
-2. *Captura UDP:* (Aici vom insera imaginea cu filtrul udp.port == 5001 care arata pachetele transmise direct)[cite: 1]
+# 1. TCP (Protocol orientat pe conexiune)
+
+## Cum se realizează conexiunea
+
+Protocolul TCP stabilește o conexiune înainte de transmiterea datelor prin procesul numit **Three-Way Handshake**.
+
+Acest proces implică trei pași:
+
+- SYN – clientul trimite o cerere de conexiune către server
+- SYN-ACK – serverul confirmă cererea și răspunde
+- ACK – clientul confirmă conexiunea
+
+După finalizarea acestui proces, conexiunea devine stabilă și datele pot fi transmise între client și server.
+
+Serverul ascultă conexiuni pe un port specific (de exemplu **portul 5000**), iar clientul inițiază conexiunea către acel port.
+
+## Cum sunt trimise mesajele
+
+Mesajele sunt transmise sub forma unui **flux continuu de date**, organizate în segmente.
+
+În aplicația noastră, comunicarea are loc în stil **Ping-Pong**:
+
+1. Clientul trimite un mesaj.
+2. Serverul îl primește și îl afișează.
+3. Serverul trimite un răspuns.
+4. Clientul primește răspunsul.
+
+Această comunicare continuă până când unul dintre utilizatori trimite mesajul **"exit"**, moment în care conexiunea se închide grațios.
+
+---
+
+# 2. UDP (Protocol fără conexiune)
+
+## Cum se realizează conexiunea
+
+Protocolul UDP **nu stabilește o conexiune înainte de transmiterea datelor**.  
+
+Nu există un proces de handshake, ceea ce face comunicarea mai rapidă, dar mai puțin sigură.
+
+## Cum sunt trimise mesajele
+
+Mesajele sunt trimise sub forma unor **datagrame independente**, direct către adresa IP și portul destinatarului.
+
+Serverul folosește funcția `recvfrom()` pentru a:
+
+- primi datagramele
+- identifica adresa IP a clientului
+- identifica portul clientului
+
+După ce primește primul pachet, serverul știe unde să trimită răspunsul.
+
+---
+
+# 3. Diferențe observate în Wireshark
+
+## Handshake inițial
+
+- **TCP:** Handshake-ul este vizibil în captură prin pachetele  
+  `SYN → SYN-ACK → ACK`
+- **UDP:** Nu există handshake.
+
+## Confirmarea primirii datelor
+
+- **TCP:** Confirmă primirea datelor folosind pachete **ACK**.
+- **UDP:** Nu există mecanism de confirmare.
+
+## Denumirea PDU
+
+În Wireshark, tipurile de pachete sunt diferite:
+
+- **TCP:** Segmente
+- **UDP:** Datagrame
+
+---
+
+# Capturi Wireshark
+
+## Captură TCP
+
+Filtru utilizat în Wireshark:
 
 
 <img width="1600" height="960" alt="server_tcp" src="https://github.com/user-attachments/assets/387cff98-3105-4379-a3db-315ea0053f90" />
